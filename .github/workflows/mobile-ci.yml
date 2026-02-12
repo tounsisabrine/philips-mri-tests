@@ -1,0 +1,67 @@
+name: Mobile E2E (Robot + Appium)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  android_robot_appium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install robotframework Appium-Python-Client
+          # If you have requirements.txt:
+          # pip install -r requirements.txt
+
+      - name: Set up Java (needed for Android tooling)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Set up Node (for Appium server)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Appium
+        run: |
+          npm i -g appium
+          appium -v
+          # Optional: drivers (often auto, but explicit is safer)
+          appium driver install uiautomator2
+          appium driver list --installed
+          
+      - name: Run Android emulator + Robot tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          emulator-boot-timeout: 900   # <-- bigger timeout (seconds)
+          disable-animations: true
+          emulator-options: >-
+            -no-window -no-audio -no-boot-anim
+            -gpu swiftshader_indirect
+            -no-snapshot -no-snapshot-save -no-snapshot-load
+            -camera-back none -camera-front none
+          script: |
+            adb devices
+            adb shell getprop sys.boot_completed || true
+            appium --log appium.log --base-path /wd/hub --relaxed-security &
+            sleep 5
+            # robot -d results tests/android
