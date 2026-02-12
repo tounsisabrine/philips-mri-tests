@@ -79,4 +79,5 @@ jobs:
               fi
               sleep 2
             done
+            echo "Emulator ready. Running tests..."
             # robot -d results tests/android
