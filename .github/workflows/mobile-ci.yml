@@ -60,8 +60,23 @@ jobs:
             -no-snapshot -no-snapshot-save -no-snapshot-load
             -camera-back none -camera-front none
           script: |
-            adb devices
-            adb shell getprop sys.boot_completed || true
-            appium --log appium.log --base-path /wd/hub --relaxed-security &
-            sleep 5
+            adb wait-for-device || true
+              echo "Waiting for emulator to become online..."
+              for i in $(seq 1 120); do
+                STATE=$(adb get-state 2>/dev/null || true)
+                if [ "$STATE" = "device" ]; then
+                  echo "Device online!"
+                  break
+                fi
+                sleep 2
+              done
+              echo "Waiting for Android boot..."
+            for i in $(seq 1 240); do
+              BOOT=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+              if [ "$BOOT" = "1" ]; then
+                echo "Boot completed!"
+                break
+              fi
+              sleep 2
+            done
             # robot -d results tests/android
