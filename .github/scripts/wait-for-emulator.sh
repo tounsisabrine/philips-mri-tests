@@ -24,7 +24,10 @@ for i in $(seq 1 240); do
 done
 
 echo "Emulator ready. Running tests..."
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
+adb devices
+List of devices attached
+emulator-5554   device
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 adb install -r "$SCRIPT_DIR/app/appmri.apk"
 # Place additional test invocation here, e.g.:
 # robot -d results tests/android
