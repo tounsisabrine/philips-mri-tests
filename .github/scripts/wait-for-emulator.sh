@@ -25,8 +25,6 @@ done
 
 echo "Emulator ready. Running tests..."
 adb devices
-List of devices attached
-emulator-5554   device
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 adb install -r "$SCRIPT_DIR/app/appmri.apk"
 # Place additional test invocation here, e.g.:
