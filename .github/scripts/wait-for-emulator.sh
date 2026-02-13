@@ -27,5 +27,6 @@ echo "Emulator ready. Running tests..."
 adb devices
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 adb install -r "$REPO_ROOT/app/appmri.apk"
+adb shell pm list packages | grep com.publicissapient.myphilipsmri.dev
 # Place additional test invocation here, e.g.:
 # robot -d results tests/android
