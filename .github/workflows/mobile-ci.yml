@@ -60,3 +60,51 @@ jobs:
             -no-snapshot -no-snapshot-save -no-snapshot-load
             -camera-back none -camera-front none
           script: bash ./.github/scripts/wait-for-emulator.sh
+
+
+  ios_simulator:
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install helper tools
+        run: |
+          brew update || true
+          brew install applesimutils || true
+
+      - name: Boot or create iOS simulator
+        id: boot_sim
+        run: |
+          set -e
+          # prefer an available iPhone 14 device if present
+          UDID=$(xcrun simctl list devices | grep -E 'iPhone 14 .*Shutdown' | grep -oE '[0-9A-F-]{36}' | head -n1 || true)
+          if [ -z "$UDID" ]; then
+            # pick the first available iOS runtime (e.g. com.apple.CoreSimulator.SimRuntime.iOS-17-0)
+            RUNTIME=$(xcrun simctl list runtimes | grep -E 'iOS .*Simulator' | head -n1 | awk -F 'com.apple.CoreSimulator.SimRuntime.' '{print $2}' | tr -d ' ')
+            if [ -z "$RUNTIME" ]; then
+              echo "No iOS runtime found"
+              exit 1
+            fi
+            RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.$RUNTIME"
+            UDID=$(xcrun simctl create ci-sim "iPhone 14" "$RUNTIME_ID")
+          fi
+          echo "simulator_udid=$UDID" >> $GITHUB_OUTPUT
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+      - name: Install iOS app on simulator
+        run: |
+          set -e
+          UDID=${{ steps.boot_sim.outputs.simulator_udid }}
+          # Update this path to point to your built .app for the simulator
+          IOS_APP_PATH="$GITHUB_WORKSPACE/ios/build/Debug-iphonesimulator/MyApp.app"
+          if [ ! -d "$IOS_APP_PATH" ]; then
+            echo "Simulator app not found at $IOS_APP_PATH"
+            echo "Build your app for the simulator and update IOS_APP_PATH accordingly."
+            exit 1
+          fi
+          xcrun simctl install "$UDID" "$IOS_APP_PATH"
+          # Optional: launch the app (replace bundle id below)
+          # xcrun simctl launch "$UDID" com.publicissapient.myphilipsmri.dev || true
