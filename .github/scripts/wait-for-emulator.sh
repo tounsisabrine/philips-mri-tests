@@ -25,7 +25,7 @@ done
 
 echo "Emulator ready. Running tests..."
 adb devices
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-adb install -r "$SCRIPT_DIR/app/appmri.apk"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+adb install -r "$REPO_ROOT/app/appmri.apk"
 # Place additional test invocation here, e.g.:
 # robot -d results tests/android
