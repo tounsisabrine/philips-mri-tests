@@ -24,5 +24,6 @@ for i in $(seq 1 240); do
 done
 
 echo "Emulator ready. Running tests..."
+adb install -r ../../app/appmri.apk
 # Place additional test invocation here, e.g.:
 # robot -d results tests/android

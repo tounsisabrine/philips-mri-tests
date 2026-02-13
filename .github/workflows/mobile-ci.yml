@@ -60,5 +60,3 @@ jobs:
             -no-snapshot -no-snapshot-save -no-snapshot-load
             -camera-back none -camera-front none
           script: bash ./.github/scripts/wait-for-emulator.sh
-      - name: Install APK on emulator
-        run: adb install -r ../app/appmri.apk
